@@ -1,10 +1,10 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./prisma";
-import nodemailer from "nodemailer";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { prisma } from './prisma';
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: 'smtp.gmail.com',
   port: 587,
   secure: false, // Use true for port 465, false for port 587
   auth: {
@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: 'postgresql', // or "mysql", "postgresql", ...etc
   }),
   trustedOrigins: [process.env.APP_URL!],
   emailAndPassword: {
@@ -26,30 +26,32 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: "string",
-        defaultValue: "USER",
+        type: 'string',
+        defaultValue: 'USER',
         required: false,
       },
       phone: {
-        type: "string",
+        type: 'string',
         required: false,
       },
       status: {
-        type: "string",
-        defaultValue: "ACTIVE",
+        type: 'string',
+        defaultValue: 'ACTIVE',
         required: false,
       },
     },
   },
   emailVerification: {
+    sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
       const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
-      const info = await transporter.sendMail({
-        from: '"Maddison Foo Koch" <afnansyed1973@gamil.com>',
-        to: "afnansayed.intern@gmail.com",
-        subject: "Hello ✔",
-        text: "Hello world?", // Plain-text version of the message
-        html: `<!DOCTYPE html>
+      try {
+        const info = await transporter.sendMail({
+          from: '"Afnan Sayed Razin" <afnansyed1973@gamil.com>',
+          to: `${user.email}`,
+          subject: 'Please verify your email .',
+          text: 'Hello world?', // Plain-text version of the message
+          html: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -147,9 +149,12 @@ export const auth = betterAuth({
 </body>
 </html>
 `.replace(/{{VERIFY_URL}}/g, verificationUrl),
-      });
+        });
 
-      console.log("Message sent:", info.messageId);
+        console.log('Message sent:', info.messageId);
+      } catch (error) {
+        console.error('Error sending email:', error);
+      }
     },
   },
 });
