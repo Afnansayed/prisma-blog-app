@@ -14,9 +14,13 @@ const createPost = async (
 const getAllPosts = async ({
   search,
   tags,
+  limit,
+  skip
 }: {
   search: string | undefined;
   tags: string[] | [];
+  limit: number,
+  skip:number
 }) => {
   const andConditions: PostWhereInput[] = [];
 
@@ -55,6 +59,8 @@ const getAllPosts = async ({
     where: {
       AND: andConditions,
     },
+    take: limit,
+    skip
   });
   return posts;
 };
