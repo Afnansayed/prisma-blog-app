@@ -1,22 +1,65 @@
 import { Post } from "../../../generated/prisma/client";
+import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 
+const createPost = async (
+  data: Omit<Post, "id" | "createdAt" | "updatedAt">
+) => {
+  const result = await prisma.post.create({
+    data,
+  });
+  return result;
+};
 
+const getAllPosts = async ({
+  search,
+  tags,
+}: {
+  search: string | undefined;
+  tags: string[] | [];
+}) => {
+  const andConditions: PostWhereInput[] = [];
 
-const createPost = async (data: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>) => {
-            const result = await prisma.post.create({
-                 data
-            });
-            return result;
-}
+  if (search) {
+    andConditions.push({
+      OR: [
+        {
+          title: {
+            contains: search as string,
+            mode: "insensitive",
+          },
+        },
+        {
+          content: {
+            contains: search as string,
+            mode: "insensitive",
+          },
+        },
+        {
+          tags: {
+            has: search as string,
+          },
+        },
+      ],
+    });
+  }
 
-const getAllPosts = async () => {
-    const posts = await prisma.post.findMany();
-    return posts;
-}
-
+  if (tags.length > 0) {
+    andConditions.push({
+      tags: {
+        hasEvery: tags as string[],
+      },
+    });
+  }
+  const posts = await prisma.post.findMany({
+    where: {
+      AND: andConditions,
+    },
+  });
+  return posts;
+};
 
 export const postService = {
-    createPost,
-    getAllPosts
+  createPost,
+  getAllPosts,
 };
