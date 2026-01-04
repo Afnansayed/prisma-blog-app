@@ -34,7 +34,7 @@ const getAllPosts = async(req:Request,res:Response) => {
     const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelpers(req.query);
  
     try{
-        const posts = await postService.getAllPosts({search:searchString , tags ,limit,skip, sortBy, sortOrder });    
+        const posts = await postService.getAllPosts({search:searchString , tags ,page ,limit,skip, sortBy, sortOrder });    
         res.status(200).json({
             message: "Posts fetched successfully",
             data: posts

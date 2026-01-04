@@ -14,6 +14,7 @@ const createPost = async (
 const getAllPosts = async ({
   search,
   tags,
+  page,
   limit,
   skip,
   sortBy,
@@ -22,6 +23,7 @@ const getAllPosts = async ({
   search: string | undefined,
   tags: string[] | [],
   limit: number,
+  page: number,
   skip:number,
   sortBy: string,
   sortOrder: string
@@ -69,7 +71,22 @@ const getAllPosts = async ({
       [sortBy]: sortOrder
     } 
   });
-  return posts;
+
+  // count
+  const totalCount = await prisma.post.count({
+    where: {
+      AND: andConditions,
+    },
+  })
+  return {
+    meta: {
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit)
+    },
+    data: posts,
+  };
 };
 
 export const postService = {
