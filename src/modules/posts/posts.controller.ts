@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { postService } from "./posts.service";
+import paginationSortingHelpers from "../../helpers/paginationSortingHelper";
 
 
 
@@ -26,13 +27,11 @@ const getAllPosts = async(req:Request,res:Response) => {
     const tags = req.query.tags  ? (req.query.tags as string).split(",") : [];
     // console.log(tags);
     //pagination
-    const limit =  Number(req.query.limit ?? 10);
-    const page = Number(req.query.page ?? 1);
-    const skip = (page - 1) * limit ; 
+  
 
-    // sorting
-    const sortBy = req.query.sortBy as string | undefined;
-    const sortOrder = req.query.sortOrder as "asc" | "desc" | undefined;
+
+
+    const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelpers(req.query);
  
     try{
         const posts = await postService.getAllPosts({search:searchString , tags ,limit,skip, sortBy, sortOrder });    
