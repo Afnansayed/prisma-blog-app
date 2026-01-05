@@ -1,9 +1,9 @@
-import { Post } from "../../../generated/prisma/client";
-import { PostWhereInput } from "../../../generated/prisma/models";
-import { prisma } from "../../lib/prisma";
+import { Post } from '../../../generated/prisma/client';
+import { PostWhereInput } from '../../../generated/prisma/models';
+import { prisma } from '../../lib/prisma';
 
 const createPost = async (
-  data: Omit<Post, "id" | "createdAt" | "updatedAt">
+  data: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>
 ) => {
   const result = await prisma.post.create({
     data,
@@ -18,15 +18,15 @@ const getAllPosts = async ({
   limit,
   skip,
   sortBy,
-  sortOrder
+  sortOrder,
 }: {
-  search: string | undefined,
-  tags: string[] | [],
-  limit: number,
-  page: number,
-  skip:number,
-  sortBy: string,
-  sortOrder: string
+  search: string | undefined;
+  tags: string[] | [];
+  limit: number;
+  page: number;
+  skip: number;
+  sortBy: string;
+  sortOrder: string;
 }) => {
   const andConditions: PostWhereInput[] = [];
 
@@ -36,13 +36,13 @@ const getAllPosts = async ({
         {
           title: {
             contains: search as string,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         {
           content: {
             contains: search as string,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         {
@@ -67,9 +67,9 @@ const getAllPosts = async ({
     where: {
       AND: andConditions,
     },
-    orderBy:  {
-      [sortBy]: sortOrder
-    } 
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
   });
 
   // count
@@ -77,19 +77,29 @@ const getAllPosts = async ({
     where: {
       AND: andConditions,
     },
-  })
+  });
   return {
     meta: {
       total: totalCount,
       page,
       limit,
-      totalPages: Math.ceil(totalCount / limit)
+      totalPages: Math.ceil(totalCount / limit),
     },
     data: posts,
   };
 };
 
+const getPostById = async (postId: string) => {
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+  return post;
+};
+
 export const postService = {
   createPost,
   getAllPosts,
+  getPostById,
 };

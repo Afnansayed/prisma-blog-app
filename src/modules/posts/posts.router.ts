@@ -65,5 +65,6 @@ const auth = (...roles: UserRole[]) => {
 
 router.post('/posts', auth(UserRole.ADMIN), postController.createPost);
 router.get('/posts', postController.getAllPosts);
+router.get('/posts/:postId', postController.getPostById);
 
 export const postsRouter = router;
