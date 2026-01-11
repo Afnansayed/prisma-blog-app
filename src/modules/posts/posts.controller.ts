@@ -1,9 +1,15 @@
 import { Request, Response } from 'express';
 import { postService } from './posts.service';
 import paginationSortingHelpers from '../../helpers/paginationSortingHelper';
+import { auth } from './../../lib/auth';
 
 const createPost = async (req: Request, res: Response) => {
   try {
+    const authorId = req.user?.id;
+    if (!authorId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    req.body.authorId = authorId;
     const result = await postService.createPost(req.body);
     res.status(201).json({
       message: 'Post created successfully',
@@ -66,8 +72,28 @@ const getPostById = async (req: Request, res: Response) => {
   }
 };
 
+const getMyPosts = async (req: Request, res: Response) => {
+  try {
+       if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const result = await postService.getMyPosts(req.user?.id as string);
+    res.status(200).json({
+      message: 'Posts fetched successfully',
+      data: result,
+    });
+  } catch (e) {
+    const errorMessage = (e instanceof Error) ? e.message : 'Posts fetched failed';
+    res.status(400).json({
+      error: errorMessage,
+      details: e,
+    });
+  }
+}
+
 export const postController = {
   createPost,
   getAllPosts,
   getPostById,
+  getMyPosts
 };

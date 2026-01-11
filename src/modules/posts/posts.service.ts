@@ -1,6 +1,7 @@
 import { CommentStatus, Post } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { auth } from './../../lib/auth';
 
 const createPost = async (
   data: Omit<Post, "id" | "createdAt" | "updatedAt">
@@ -147,8 +148,36 @@ const getPostById = async (postId: string) => {
   });
 };
 
+const getMyPosts = async(authorId: string) => {
+     await prisma.user.findUniqueOrThrow({
+        where: {
+           id: authorId ,
+           status: "ACTIVE"
+         },
+        select: { id: true}  
+    });
+
+    return await prisma.post.findMany({
+        where: { authorId },
+        orderBy: { createdAt: "desc" },
+        include: {
+            _count: { select: { comments: true } }
+        }
+
+         // const total = await prisma.post.aggregate({
+    //     _count: {
+    //         id: true
+    //     },
+    //     where: {
+    //         authorId
+    //     }
+    // })
+    })
+}
+
 export const postService = {
   createPost,
   getAllPosts,
   getPostById,
+  getMyPosts
 };
