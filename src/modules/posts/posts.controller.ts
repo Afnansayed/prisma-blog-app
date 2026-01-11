@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { postService } from './posts.service';
 import paginationSortingHelpers from '../../helpers/paginationSortingHelper';
 import { auth } from './../../lib/auth';
+import { UserRole } from '../../middleware/auth';
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -91,9 +92,30 @@ const getMyPosts = async (req: Request, res: Response) => {
   }
 }
 
+const updatePosts = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const isAdmin = req.user?.role === UserRole.ADMIN;
+    const result = await postService.updatePosts(req?.params?.postId as string, req.body , req.user?.id as string, isAdmin);
+    res.status(200).json({
+      message: 'Posts updated successfully',
+      data: result,
+    });
+  } catch (e) {
+    const errorMessage = (e instanceof Error) ? e.message : 'Posts update failed';
+    res.status(400).json({
+      error: errorMessage,
+      details: e,
+    });
+  }
+}
+
 export const postController = {
   createPost,
   getAllPosts,
   getPostById,
-  getMyPosts
+  getMyPosts,
+  updatePosts
 };

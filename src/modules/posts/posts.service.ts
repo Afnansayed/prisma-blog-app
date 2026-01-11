@@ -173,11 +173,34 @@ const getMyPosts = async(authorId: string) => {
     //     }
     // })
     })
+};
+
+const updatePosts = async(postId: string, data: Partial<Post> ,authorId: string, isAdmin: boolean) => {
+     const existingPost = await prisma.post.findUniqueOrThrow({
+        where: {
+           id: postId,
+         },
+    });
+
+    if (!isAdmin && existingPost.authorId !== authorId) {
+        throw new Error("You are not authorized to update this post");
+    }
+    if(!isAdmin){
+        delete data.isFeatured;
+    }
+
+    return await prisma.post.update({
+        where: {
+            id: postId,
+        },
+        data
+    });
 }
 
 export const postService = {
   createPost,
   getAllPosts,
   getPostById,
-  getMyPosts
+  getMyPosts,
+  updatePosts
 };
