@@ -164,7 +164,7 @@ const getMyPosts = async(authorId: string) => {
             _count: { select: { comments: true } }
         }
 
-         // const total = await prisma.post.aggregate({
+    // const total = await prisma.post.aggregate({
     //     _count: {
     //         id: true
     //     },
@@ -197,10 +197,29 @@ const updatePosts = async(postId: string, data: Partial<Post> ,authorId: string,
     });
 }
 
+const deletePost = async (postId: string, isAdmin: boolean , authorId: string) => {
+      const existingPost = await prisma.post.findUniqueOrThrow({
+           where: {
+            id: postId,
+           }
+      });
+
+      if(!isAdmin && existingPost.authorId !== authorId){
+        throw new Error("You are not authorized to delete this post");
+      }
+
+      return await prisma.post.delete({
+        where: {
+            id: postId,
+        }
+      })
+}
+
 export const postService = {
   createPost,
   getAllPosts,
   getPostById,
   getMyPosts,
-  updatePosts
+  updatePosts,
+  deletePost,
 };
