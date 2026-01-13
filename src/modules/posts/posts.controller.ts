@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { postService } from './posts.service';
 import paginationSortingHelpers from '../../helpers/paginationSortingHelper';
 import { auth } from './../../lib/auth';
 import { UserRole } from '../../middleware/auth';
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response , next: NextFunction) => {
   try {
     const authorId = req.user?.id;
     if (!authorId) {
@@ -17,10 +17,7 @@ const createPost = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Internal Server Error',
-      error: error,
-    });
+      next(error);
   }
 };
 
@@ -92,7 +89,7 @@ const getMyPosts = async (req: Request, res: Response) => {
   }
 }
 
-const updatePosts = async (req: Request, res: Response) => {
+const updatePosts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.id) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -104,11 +101,7 @@ const updatePosts = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (e) {
-    const errorMessage = (e instanceof Error) ? e.message : 'Posts update failed';
-    res.status(400).json({
-      error: errorMessage,
-      details: e,
-    });
+     next(e);
   }
 }
 
